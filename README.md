@@ -1,7 +1,10 @@
 # Open Finance Consent & Data Exchange Gateway
 
-> One gateway, one canonical financial-data model, **thin adapters for multiple regional open-banking standards** (Berlin Group / PSD2, UK Open Banking, FDX), secured with **FAPI 2.0**, with a consent dashboard offering granular, time-boxed, revocable access.
+> Open banking has no single global standard — UK OBIE, EU Berlin Group / PSD2, US FDX, and SG SGFinDex all differ, so building across regions means N integrations, and users get opaque, all-or-nothing data sharing. **This gateway gives builders one API and users one switch:** a single canonical model with thin per-standard adapters, secured with FAPI 2.0, and a consent dashboard offering granular, time-boxed, instantly-revocable access.
+>
+> *Under the hood: a canonical account/transaction model + anti-corruption adapters (Berlin Group, OBIE, FDX), FAPI 2.0 (PAR + DPoP), and an append-only consent audit log.*
 
+**For:** developers / TPPs integrating bank data (one API, not four) — and end users controlling who can see their finances.
 **Skill signal:** API engineering · OAuth2 / OIDC / FAPI · financial-standards fluency · API integration
 **Region anchor:** UK (OBIE) + EU (Berlin Group / PSD2) primary; FDX (US) + SGFinDex (Singapore) as adapters
 
@@ -39,7 +42,7 @@ flowchart TD
 - **FAPI 2.0, not toy OAuth** — Pushed Authorization Requests and sender-constrained (DPoP) tokens, which is what banks actually mandate.
 - **Attack/defense demo:** a token-replay attempt against a *revoked* consent is rejected, and the append-only audit log shows the full grant/revoke trail.
 
-See [`PLAN.md`](./PLAN.md) for the full build plan and [`docs/adr/`](./docs/adr/) for engineering decisions.
+See [`docs/product/brief.md`](./docs/product/brief.md) for the product thinking (users, success metrics, non-goals, risks), [`PLAN.md`](./PLAN.md) for the full build plan, and [`docs/adr/`](./docs/adr/) for engineering decisions.
 
 ## Status
 
