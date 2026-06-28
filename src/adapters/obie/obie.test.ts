@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { CanonicalAccount, CanonicalTransaction } from "../../canonical/model.js";
+import type { CanonicalRepository } from "../../canonical/repository.js";
 import { toObieAccountsResponse, toObieTransactionsResponse } from "./index.js";
 import { buildServer } from "../../server.js";
 
@@ -49,20 +50,38 @@ describe("OBIE adapter", () => {
   });
 });
 
+// A fake repository keeps the gateway tests DB-free; the real DB round-trip is
+// covered by the smoke check (see MILESTONE.md).
+const fakeRepo = {
+  listAccounts: async () => [account],
+  getAccount: async (id: string) => (id === account.id ? account : null),
+  listTransactions: async () => [txn],
+} as unknown as CanonicalRepository;
+
 describe("gateway", () => {
   it("responds 200 on /health", async () => {
-    const app = buildServer();
+    const app = buildServer(fakeRepo);
     const res = await app.inject({ method: "GET", url: "/health" });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({ status: "ok" });
     await app.close();
   });
 
-  it("serves mapped OBIE accounts", async () => {
-    const app = buildServer();
+  it("serves mapped OBIE accounts from the repository", async () => {
+    const app = buildServer(fakeRepo);
     const res = await app.inject({ method: "GET", url: "/obie/accounts" });
     expect(res.statusCode).toBe(200);
-    expect(res.json().Data.Account.length).toBeGreaterThan(0);
+    expect(res.json().Data.Account[0].AccountId).toBe("acc-test");
+    await app.close();
+  });
+
+  it("404s for an unknown account on the transactions endpoint", async () => {
+    const app = buildServer(fakeRepo);
+    const res = await app.inject({
+      method: "GET",
+      url: "/obie/accounts/does-not-exist/transactions",
+    });
+    expect(res.statusCode).toBe(404);
     await app.close();
   });
 });

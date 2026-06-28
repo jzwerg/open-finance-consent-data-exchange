@@ -1,6 +1,7 @@
 /**
- * Mock canonical data for first boot. A later milestone replaces this with the
- * PostgreSQL-backed canonical store; the shape returned to adapters stays the same.
+ * Mock canonical data. This is the SEED SOURCE for the Postgres-backed canonical
+ * store (see `src/db/seed.ts`); the gateway reads accounts/transactions from the
+ * database via `CanonicalRepository`, not from these arrays directly.
  */
 import type { CanonicalAccount, CanonicalTransaction } from "./model.js";
 
@@ -75,7 +76,3 @@ export const transactions: CanonicalTransaction[] = [
     description: "Standing order from Everyday Current",
   },
 ];
-
-export function transactionsForAccount(accountId: string): CanonicalTransaction[] {
-  return transactions.filter((t) => t.accountId === accountId);
-}

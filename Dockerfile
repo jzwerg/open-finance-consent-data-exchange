@@ -14,6 +14,8 @@ ENV FAPI_KEYS_DIR=/keys
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=builder /app/dist ./dist
+# Migrations are applied at startup (see src/db/migrate.ts).
+COPY drizzle ./drizzle
 
 # Signing keys are generated here at startup; make the dir writable by the node user.
 RUN mkdir -p /keys && chown -R node:node /keys
