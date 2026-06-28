@@ -1,0 +1,44 @@
+# First-boot skeleton — gateway + FAPI 2.0 auth server + Postgres + consent dashboard.
+# Goal of this file: `docker compose up` brings the stack to a healthy state, the
+# gateway serves the canonical model through at least one adapter, and the dashboard
+# loads. The revoke-then-replay security demo is the NEXT milestone (MILESTONE.md).
+#
+# The auth server generates its signing keys at startup — no external secrets needed
+# for first boot. Host ports for this project live in the 83xx range.
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-openfinance}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-openfinance}"
+      POSTGRES_DB: "${POSTGRES_DB:-openfinance}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-openfinance}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes: [db-data:/var/lib/postgresql/data]
+    ports: ["8302:5432"]
+
+  # Gateway + FAPI 2.0 authorization server (canonical model + adapters + consent).
+  api:
+    build: .                       # TODO(session): add Dockerfile (Node/TS, Fastify)
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-openfinance}:${POSTGRES_PASSWORD:-openfinance}@db:5432/${POSTGRES_DB:-openfinance}"
+      # Signing keys are generated at startup if absent; override to pin them.
+      FAPI_KEYS_DIR: "${FAPI_KEYS_DIR:-/keys}"
+    ports: ["8300:3000"]
+
+  # React consent dashboard (the one piece that could also deploy to Vercel).
+  dashboard:
+    build: ./dashboard            # TODO(session): add dashboard app + Dockerfile
+    depends_on: [api]
+    environment:
+      API_BASE_URL: "http://localhost:8300"
+    ports: ["8301:80"]
+
+volumes:
+  db-data:
