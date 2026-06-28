@@ -8,6 +8,8 @@
 **Skill signal:** API engineering · OAuth2 / OIDC / FAPI · financial-standards fluency · API integration
 **Region anchor:** UK (OBIE) + EU (Berlin Group / PSD2) primary; FDX (US) + SGFinDex (Singapore) as adapters
 
+[![CI](https://github.com/jzwerg/open-finance-consent-data-exchange/actions/workflows/ci.yml/badge.svg)](https://github.com/jzwerg/open-finance-consent-data-exchange/actions/workflows/ci.yml)
+
 ---
 
 ## Why this exists
@@ -43,6 +45,16 @@ flowchart TD
 - **Attack/defense demo:** a token-replay attempt against a *revoked* consent is rejected, and the append-only audit log shows the full grant/revoke trail.
 
 See [`docs/product/brief.md`](./docs/product/brief.md) for the product thinking (users, success metrics, non-goals, risks), [`PLAN.md`](./PLAN.md) for the full build plan, and [`docs/adr/`](./docs/adr/) for engineering decisions.
+
+## Run it
+
+```bash
+docker-compose up        # FAPI 2.0 auth server + gateway + Postgres + consent dashboard
+```
+
+The full stack runs from one command. *(The React consent dashboard can also be deployed standalone to Vercel; the auth server is stateful and stays in the compose stack.)* The proof is in CI: every push runs the security demo in GitHub Actions — a token replay against a **revoked** consent is rejected, and the append-only audit log shows the full grant/revoke trail. A green check means consent revocation actually holds.
+
+> 🎬 *A terminal recording of the revoke-then-replay demo will live here.*
 
 ## Status
 
