@@ -49,7 +49,7 @@ See [`docs/product/brief.md`](./docs/product/brief.md) for the product thinking 
 ## Run it
 
 ```bash
-docker-compose up        # FAPI 2.0 auth server + gateway + Postgres + consent dashboard
+docker compose up        # FAPI 2.0 auth server + gateway + Postgres + consent dashboard  (or: make up)
 ```
 
 The full stack runs from one command. *(The React consent dashboard can also be deployed standalone to Vercel; the auth server is stateful and stays in the compose stack.)* The proof is in CI: every push runs the security demo in GitHub Actions — a token replay against a **revoked** consent is rejected, and the append-only audit log shows the full grant/revoke trail. A green check means consent revocation actually holds.
