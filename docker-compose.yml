@@ -23,19 +23,26 @@ services:
 
   # Gateway + FAPI 2.0 authorization server (canonical model + adapters + consent).
   api:
-    build: .                       # TODO(session): add Dockerfile (Node/TS, Fastify)
+    build: .                       # Node/TS Fastify gateway (see ./Dockerfile)
     depends_on:
       db: { condition: service_healthy }
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER:-openfinance}:${POSTGRES_PASSWORD:-openfinance}@db:5432/${POSTGRES_DB:-openfinance}"
       # Signing keys are generated at startup if absent; override to pin them.
       FAPI_KEYS_DIR: "${FAPI_KEYS_DIR:-/keys}"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     ports: ["8300:3000"]
 
   # React consent dashboard (the one piece that could also deploy to Vercel).
   dashboard:
-    build: ./dashboard            # TODO(session): add dashboard app + Dockerfile
-    depends_on: [api]
+    build: ./dashboard            # Vite/React app served by nginx (see ./dashboard/Dockerfile)
+    depends_on:
+      api: { condition: service_healthy }
     environment:
       API_BASE_URL: "http://localhost:8300"
     ports: ["8301:80"]
